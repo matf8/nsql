@@ -24,12 +24,12 @@ public class Tarea2nosqlApplication {
 	ControladorError repositorioE = new ControladorError();
 		
 	@PostMapping("/crearUsuario")
-    public ResponseEntity<Object> agregarUsuario(@RequestBody Usuario usuario) throws QError  {
+    public ResponseEntity<Object> agregarUsuario(@RequestBody Usuario usuario) {
 		return this.repositorioU.create(usuario); 
 	}
 
     @GetMapping("/obtenerUsuario")
-    public ResponseEntity<Object> obtenerUsuario(@RequestParam String correo) throws QError {
+    public ResponseEntity<Object> obtenerUsuario(@RequestParam String correo) {
         return repositorioU.find(correo);
     }
     

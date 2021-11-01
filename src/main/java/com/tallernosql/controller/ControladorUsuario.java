@@ -24,7 +24,7 @@ public class ControladorUsuario {
 	@Autowired private static final ControladorError cE = new ControladorError();
 	private static final RethinkDB r = RethinkDB.r;	
          
-	public ResponseEntity<Object> create(Usuario u) throws QError { 
+	public ResponseEntity<Object> create(Usuario u) { 
     	//r.db("t2").table("usuarios").delete().run(con);
     	if (find(u.getCorreo()) == null) {
 	    	try {  	    		

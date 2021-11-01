@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class QError extends Exception {		
-	private static final long serialVersionUID = 1L;
+public class QError {		
 	private int idE;
 	private String descripcion;
 	
