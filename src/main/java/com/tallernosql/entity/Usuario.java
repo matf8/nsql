@@ -1,5 +1,8 @@
 package com.tallernosql.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,8 +13,9 @@ import lombok.NoArgsConstructor;
 public class Usuario {
 	private String correo;
 	private String password;
-	private String nombre;
+	private String nombre;	
 	private String apellido;
+	private List<String> roles = new ArrayList<String>(); 
 	
 	public Usuario() {}
 	
@@ -52,6 +56,22 @@ public class Usuario {
 
 	public void setApellido(String apellido) {
 		this.apellido = apellido;
+	}
+
+	public List<String> getRoles() {
+		return roles;
+	}
+
+	public void setRoles(List<String> roles) {
+		this.roles = roles;
+	}
+	
+	public void agregarRol(String r) {
+		this.roles.add(r);
+	}
+	
+	public void borrarRol(String r) {
+		this.roles.remove(r);
 	}
 	
 }

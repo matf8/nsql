@@ -25,7 +25,6 @@ public class ControladorError {
 		List<QError> ret = new ArrayList<QError>();		
 		try (Result<QError> result = r.db("t2").table("errores").orderBy().optArg("index", "idE").run(con, QError.class)) {
 		    for (QError doc : result) {
-				System.out.println(doc.getIdE() + " " + doc.getDescripcion());
 				ret.add(doc);
 		    }
 		}
