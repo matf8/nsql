@@ -3,13 +3,10 @@ package com.tallernosql.controller;
 import com.rethinkdb.RethinkDB;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -81,14 +78,21 @@ public class ControladorUsuario {
    }
    
    public List<Usuario> getAll() {
-		List<Usuario> ret = new ArrayList<Usuario>();		
+		List<Usuario> ret = new ArrayList<Usuario>();	
+		List<String> roles = new ArrayList<String>();	
 		try (Result<Usuario> result = r.db("t2").table("usuarios").orderBy().optArg("index", "correo").run(con, Usuario.class)) {
 		    for (Usuario doc : result) {
-				ret.add(doc);
+		    	 Result<Rol> result2 = r.db("t2").table("roles").getAll(doc.getCorreo()).optArg("index","correoRol").run(con, Rol.class);
+	   			  for (Rol doc2: result2) {
+	   				   roles.add(doc2.getNombreRol());
+	   				   doc.agregarRol(doc2.getNombreRol());	   				  
+	   			  }	   			  
+	   			  ret.add(doc);				
 		    }
 		}
+		
 		return ret;
-	}
+   }
    
    public ResponseEntity<Object> agregarRol(Rol rol) { 
 	   ResponseEntity<Object> f = find(rol.getCorreoRol());	
@@ -99,9 +103,9 @@ public class ControladorUsuario {
    			   Result<Rol> result = r.db("t2").table("roles").getAll(rol.getCorreoRol()).optArg("index","correoRol").run(con, Rol.class);
    			   for (Rol doc: result) 	
    				   lR.add(doc.getNombreRol());   			   
-   			  
-   			   if (!lR.contains(rol.getNombreRol())) {
-   				//   u.agregarRol(rol.getNombreRol());   		  
+   			   if (rol.getNombreRol() != null) {   				  
+   			     if (!lR.contains(rol.getNombreRol())) {
+   				   u.agregarRol(rol.getNombreRol());   		  
 		  	   	   try {    			
 			  	    	r.db("t2").table("roles").insert
 			  	    	(r.array(r.hashMap("correoRol", rol.getCorreoRol())
@@ -112,7 +116,24 @@ public class ControladorUsuario {
 		   		   }  catch (Exception e) {
 		       		 e.printStackTrace();
 		   		   } 
-   			  }
+   			   }
+   			 } else {
+   				List<String> lr = rol.getRoles();    			
+   				for (String doc2: lr) {	
+    				 u.agregarRol(doc2);
+		   			 try {    			
+			  	    	r.db("t2").table("roles").insert
+			  	    	(r.array(r.hashMap("correoRol", rol.getCorreoRol())
+			  	    			.with("passwordRol", rol.getPasswordRol())		    			
+			  	    		    .with("nombreRol", doc2)))
+			  	    			.run(con, Rol.class);		  	    	
+			   		   }  catch (Exception e) {
+			       		 e.printStackTrace();
+			   		   }
+		   			 }
+   				return new ResponseEntity<>(rol, HttpStatus.OK);
+   			 }
+   			   
    		} else { // password incorrecta
    			return new ResponseEntity<>(cE.getError(104), HttpStatus.BAD_REQUEST);
    		}   		 
@@ -120,10 +141,14 @@ public class ControladorUsuario {
      	  return new ResponseEntity<>(cE.getError(102), HttpStatus.BAD_REQUEST);
    	  } 
    	  return new ResponseEntity<>("El rol ya existía, no hubo modificaciones.",HttpStatus.OK);  
-   } 
+   }
    
-   public ResponseEntity<Object> eliminarRol(Rol rol) { 
-	   List<String> lR = rol.getRoles();	   
+   public ResponseEntity<Object> eliminarRol(Rol rol) { 	   
+	   List<String> lR = rol.getRoles();	  
+	   if (lR == null) {
+		   lR =  new ArrayList<>();	
+		   lR.add(rol.getNombreRol());	 
+	   }
 	   ResponseEntity<Object> f = find(rol.getCorreoRol());		   
    	   if (f.getStatusCode().equals(HttpStatus.OK)) {
    		   Usuario u = (Usuario) f.getBody();
@@ -133,18 +158,20 @@ public class ControladorUsuario {
  			   for (Rol doc: result) 	
  				   rolesDB.add(doc.getNombreRol());  
  			   if (rolesDB.isEmpty())
- 				   return new ResponseEntity<>(cE.getError(103), HttpStatus.BAD_REQUEST);
+ 				   return new ResponseEntity<>(cE.getError(103), HttpStatus.BAD_REQUEST);		// no hay roles para borrar
  			   else {
-	 			   for (String s: lR) {
-	 				   if (rolesDB.contains(s)) {
-	 					  try {  
-	 						 r.db("t2").table("roles").filter(r.hashMap("correoRol", rol.getCorreoRol())).delete().run(con, Rol.class);		 			   		
-		 			   		 u.borrarRol(rol.getNombreRol());  
-		 			   		 return new ResponseEntity<>("Roles " + lR.toString() + " eliminados", HttpStatus.OK); 					     	
-				   		  } catch (Exception e) {
-					       	 e.printStackTrace();
-				   		  } 
-	 				   }    			 
+ 				   if (lR != null) {
+		 			   for (String s: lR) {
+		 				   if (rolesDB.contains(s)) {
+		 					  try {  
+		 						 r.db("t2").table("roles").filter(r.hashMap("nombreRol", s)).delete().run(con, Rol.class);		 			   		
+			 			   		 u.borrarRol(s);  			 			   						     	
+					   		  } catch (Exception e) {
+						       	 e.printStackTrace();
+					   		  } 
+		 				   }    			 
+		 			   }
+		 			  return new ResponseEntity<>("Roles " + lR.toString() + " eliminados", HttpStatus.OK); 	
 	 			   }
  			   }
    		} else { 
