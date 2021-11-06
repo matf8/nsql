@@ -20,9 +20,9 @@ public class ReThinkDBFactory {
 	public static Connection createConnection() {       
 		try {		      
 			return RethinkDB.r.connection().hostname(host).connect();				           
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        } catch (Exception e) {        	
+        		throw new RuntimeException(e);
+        }        
 	}
 }
 

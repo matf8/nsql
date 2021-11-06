@@ -60,21 +60,26 @@ public class ControladorUsuario {
     }
 
    public ResponseEntity<Object> iniciarSesion(String correo, String password) {
-	   boolean i = false;
+	   boolean i = false, j = false;
 	   Usuario u = null;
 	   try (Result<Usuario> result = r.db("t2").table("usuarios").getAll(correo).optArg("index","correo").run(con, Usuario.class)) {
-		   for (Usuario doc: result) 			 	
-		    	if (doc.getCorreo().equals(correo) && doc.getPassword().equals(password)) {		    		
-		    		i = true;
-		    		u = doc;
-		    	}		    		
+		   for (Usuario doc: result) {		 	
+		    	if (doc.getCorreo().equals(correo)) {
+		    		if (doc.getPassword().equals(password)) {			    	
+		    			i = true;
+		    			u = doc;
+		    			return new ResponseEntity<>("Log-in: " + i + "\n Welcome: " + u.getNombre(), HttpStatus.OK);
+
+		    		} else return new ResponseEntity<>(cE.getError(104), HttpStatus.BAD_REQUEST);	
+
+		    	} else return new ResponseEntity<>(cE.getError(102), HttpStatus.BAD_REQUEST);	
+
+		   }		 
 		} 	catch (Exception e) {
 			e.printStackTrace();
 		}
-	   
-		if (i == true) 
-			return new ResponseEntity<>("Log-in: " + i + "\n Welcome: " + u.getNombre(), HttpStatus.OK);
-		else return new ResponseEntity<>(cE.getError(104), HttpStatus.BAD_REQUEST);	
+	 return new ResponseEntity<>(cE.getError(102), HttpStatus.BAD_REQUEST);	
+
    }
    
    public List<Usuario> getAll() {
@@ -170,7 +175,7 @@ public class ControladorUsuario {
 						       	 e.printStackTrace();
 					   		  } 
 		 				   }    			 
-		 			   }
+		 			  }
 		 			  return new ResponseEntity<>("Roles " + lR.toString() + " eliminados", HttpStatus.OK); 	
 	 			   }
  			   }
