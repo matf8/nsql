@@ -27,7 +27,7 @@ public class ControladorUsuario {
 	public ResponseEntity<Object> create(Usuario u) { 
     	//r.db("t2").table("usuarios").delete().run(con);
 		ResponseEntity<Object> f = find(u.getCorreo());		
-    	if (!f.getStatusCode().equals(HttpStatus.CREATED)) {
+    	if (!f.getStatusCode().equals(HttpStatus.OK)) {
 	    	try {  	    		
 		    	r.db("t2").table("usuarios").insert
 		    	(r.array(r.hashMap("correo", u.getCorreo())
